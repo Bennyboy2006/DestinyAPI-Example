@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Destiny API Example</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="characterInfo"></div>
+
+    <script>
+        const myHeaders = new Headers();
+        //Replace YOUR-API-KEY-HERE with your API key from https://www.bungie.net/en/Application/
+        myHeaders.append("x-api-key", "YOUR-API-KEY-HERE");
+
+        const requestOptions = {
+            method: "GET",
+            headers: myHeaders,
+            redirect: "follow"
+        };
+
+        const characterInfoDiv = document.getElementById("characterInfo");
+
+        //Replace YOUR_DESTINY_MEMBERSHIP_ID With your membership ID you can find this here https://data.destinysets.com/ after logging in click on an API request and it will be able to autofill your membership ID
+        //Components relate to what data is recieved from the API request. 200 is for Characters, 205 Is for Equipment and Items
+
+        fetch("https://www.bungie.net/Platform/Destiny2/2/Profile/YOUR_DESTINY_MEMBERSHIP_ID/?components=200", requestOptions)
+            .then((response) => response.json())
+            .then((data) => {
+                // Extract characters data from the response
+                const characters = data.Response.characters.data;
+
+                // Display the character information
+                let characterInfoHTML = "";
+                for (const characterId in characters) {
+                    if (characters.hasOwnProperty(characterId)) {
+                        const character = characters[characterId];
+                        const characterClass = getClassName(character.classType);
+                        const characterPowerLevel = character.light;
+                        const minsPlayedTotal = MinsToHours(character.minutesPlayedTotal);
+                        const emblemUrl = getEmblemUrl(character.emblemBackgroundPath);
+
+                        // Extract and format character stats
+                        const characterStats = character.stats;
+                        const characterStatsDetail = character.stats; // These are the players stats, Do not change the numbers are these relate to where the specific stats are stored within the API Response
+
+                        characterInfoHTML += `<div class="characterBox">
+                            <center>
+                            <img src="${emblemUrl}" alt="Character Emblem">
+                            <h3>${characterClass}</h3>
+                            <p>Power Level: ${characterPowerLevel}</p>
+                            <p>Time Played: ${minsPlayedTotal}</p>
+                            <h4>Character Stats</h4>
+                            <p>Mobility: ${characterStatsDetail['2996146975']} </p>
+                            <p>Resilience: ${characterStatsDetail['392767087']} </p>
+                            <p>Recovery: ${characterStatsDetail['1943323491']} </p>
+                            <p>Discipline: ${characterStatsDetail['1735777505']} </p>
+                            <p>Intellect: ${characterStatsDetail['144602215']} </p>
+                            <p>Strength: ${characterStatsDetail['4244567218']} </p>
+                            </center>
+                            </div>`;
+                    }
+                }
+
+                // Update the HTML content
+                characterInfoDiv.innerHTML = characterInfoHTML;
+            })
+            .catch((error) => {
+                console.error(error);
+                characterInfoDiv.innerHTML = "<p>Error retrieving data from Bungie API</p>";
+            });
+
+        function getClassName(classType) {
+            switch (classType) {
+                case 0:
+                    return "Titan";
+                case 1:
+                    return "Hunter";
+                case 2:
+                    return "Warlock";
+                default:
+                    return "Unknown";
+            }
+        }
+
+
+        //Convert Playtime from minutes to hours and minutes
+        function MinsToHours(totalMinutes) {
+            const hours = Math.floor(totalMinutes / 60); // Get the whole number of hours
+            const minutes = totalMinutes % 60; // Get the remaining minutes after calculating hours
+            return `${hours} hours and ${minutes} minutes`;
+        }
+
+        //Get the emblem background
+        function getEmblemUrl(emblemPath) {
+            const baseUrl = "https://www.bungie.net";
+            return `${baseUrl}${emblemPath}`;
+        }
+    </script>
+</body>
+</html>

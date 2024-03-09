@@ -1,0 +1,10 @@
+* {
+    box-sizing: border-box;
+    background-color: gray;
+  }
+  
+  .characterBox {
+    float: left;
+    width: 33.33%;
+    padding: 10px;
+  }
